@@ -12,10 +12,10 @@ To use, require the gem before you setup log4r, then add config like the followi
             - gelf
 
       outputters:
-        - type: GelfOutputter
+        - type: Log4r::Gelf::GelfOutputter
           name: gelf
-          gelf_server: "<%= graylog_server.full_name %>"
-          gelf_port: "<%= rubber_env.graylog_server_port %>"
+          gelf_server: "<graylog_server_name>"
+          gelf_port: "<graylog_server_port>"
           # Optional - showing default values
           # facility: "gelf-rb"
           # host: "#{Socket.gethostname}"
