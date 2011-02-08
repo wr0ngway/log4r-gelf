@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.executables   = []
   s.require_paths = ["lib"]
 
-  s.add_dependency("log4r", '~> 1.0.5')
+  s.add_dependency("log4r", '~> 1.0')
   s.add_dependency("gelf", '~> 1.1.3')
 
 end
