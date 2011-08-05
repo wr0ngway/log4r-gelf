@@ -33,7 +33,7 @@ module Log4r
       def canonical_log(logevent)
         level = LEVELS_MAP[Log4r::LNAMES[logevent.level]]
 
-        msg = "#{logevent.fullname}: #{logevent.data.to_s}"
+        msg = format(logevent)
 
         if logevent.data.respond_to?(:backtrace)
           trace = logevent.data.backtrace
