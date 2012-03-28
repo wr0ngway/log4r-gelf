@@ -2,36 +2,36 @@ require 'gelf'
 require 'log4r/outputter/outputter'
 
 module Log4r
-  module Gelf
 
     class GelfOutputter < Log4r::Outputter
 
       LEVELS_MAP = {
         "DEBUG"  => GELF::Levels::DEBUG,
         "INFO"   => GELF::Levels::INFO,
-        "WARN"   => GELF::Levels::ERROR,
-        "ERROR"  => GELF::Levels::FATAL,
+        "WARN"   => GELF::Levels::WARN,
+        "ERROR"  => GELF::Levels::ERROR,
         "FATAL"  => GELF::Levels::FATAL,
       }
 
       def initialize(_name, hash={})
         super(_name, hash)
 
-        server = hash[:gelf_server] || "127.0.0.1"
-        port = hash[:gelf_port] || 12201
-        max_chunk_size = hash[:max_chunk_size] || 'LAN'
+        server = hash['gelf_server'] || "127.0.0.1"
+        port = (hash['gelf_port'] || 12201).to_i
+        max_chunk_size = hash['max_chunk_size'] || 'LAN'
         opts = {}
-        opts['host'] = hash[:host] if hash[:host]
-        opts['facility'] = hash[:facility] if hash[:facility]
-        opts['level'] = hash[:level] if hash[:level]
+        opts['host'] = hash['host'] if hash['host']
+        opts['facility'] = hash['facility'] if hash['facility']
+        opts['level'] = LEVELS_MAP[hash['level']] if hash['level']
 
         @notifier = GELF::Notifier.new(server, port, max_chunk_size, opts)
       end
 
       private
-
+      
       def canonical_log(logevent)
         level = LEVELS_MAP[Log4r::LNAMES[logevent.level]]
+        level = GELF::Levels::DEBUG unless level 
 
         msg = "#{logevent.fullname}: #{logevent.data.to_s}"
 
@@ -64,5 +64,5 @@ module Log4r
       end
 
     end
-  end
+
 end

@@ -12,7 +12,7 @@ To use, require the gem before you setup log4r, then add config like the followi
             - gelf
 
       outputters:
-        - type: Log4r::Gelf::GelfOutputter
+        - type: GelfOutputter
           name: gelf
           gelf_server: "<graylog_server_name>"
           gelf_port: "<graylog_server_port>"
@@ -20,4 +20,4 @@ To use, require the gem before you setup log4r, then add config like the followi
           # facility: "gelf-rb"
           # host: "#{Socket.gethostname}"
           # max_chunk_size: 'LAN'
-          # level: 5 # GELF::UNKNOWN
+          # level: DEBUG
