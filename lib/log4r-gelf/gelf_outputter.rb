@@ -30,36 +30,60 @@ module Log4r
       private
       
       def canonical_log(logevent)
-        
+
+        opts = {}
         level = LEVELS_MAP[Log4r::LNAMES[logevent.level]]
         level = GELF::Levels::DEBUG unless level 
-
+        opts[:level] = level
+        opts["_logger"] = logevent.fullname
+            
         if logevent.data.respond_to?(:backtrace)
           trace = logevent.data.backtrace
           if trace
-            full_msg = trace.join("\n")
-            file = trace[0].split(":")[0]
-            line = trace[0].split(":")[1]
+            opts[:full_message] = trace.join("\n")
+            opts[:file] = trace[0].split(":")[0]
+            opts[:line] = trace[0].split(":")[1]
           end
         end
 
         if logevent.tracer
           trace = logevent.tracer.join("\n")
-          full_msg = "#{full_msg}\nLog tracer:\n#{trace}"
-          file = logevent.tracer[0].split(":")[0]
-          line = logevent.tracer[0].split(":")[1]
+          opts[:full_message] = "#{opts[:full_message]}\nLog tracer:\n#{trace}"
+          opts[:file] = logevent.tracer[0].split(":")[0]
+          opts[:line] = logevent.tracer[0].split(":")[1]
+        end
+        
+        gdc = Log4r::GDC.get
+        if gdc && gdc != $0
+          begin
+            opts["_global_context"] = gdc.inspect
+          rescue
+          end
+        end
+          
+        if Log4r::NDC.get_depth > 0
+          Log4r::NDC.clone_stack.each_with_index do |x, i|
+            begin
+              opts["_nested_context_#{i}"] = x.inspect
+            rescue
+            end
+          end
         end
 
+        mdc = Log4r::MDC.get_context
+        if mdc && mdc.size > 0
+          mdc.each do |k, v|
+            begin
+              opts["_mapped_context_#{k}"] = v.inspect
+            rescue
+            end
+          end
+        end
+        
         synch do
-          msg = format(logevent)
+          opts[:short_message] = format(logevent)
   
-          @notifier.notify!(
-            :short_message => msg,
-            :full_message => full_msg,
-            :level => level,
-            :file => file,
-            :line => line
-          )
+          @notifier.notify!(opts)
         end
       rescue => err
         puts "Graylog2 logger. Could not send message: " + err.message
