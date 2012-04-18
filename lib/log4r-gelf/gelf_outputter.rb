@@ -30,10 +30,9 @@ module Log4r
       private
       
       def canonical_log(logevent)
+        
         level = LEVELS_MAP[Log4r::LNAMES[logevent.level]]
         level = GELF::Levels::DEBUG unless level 
-
-        msg = "#{logevent.fullname}: #{logevent.data.to_s}"
 
         if logevent.data.respond_to?(:backtrace)
           trace = logevent.data.backtrace
@@ -51,13 +50,17 @@ module Log4r
           line = logevent.tracer[0].split(":")[1]
         end
 
-        @notifier.notify!(
-          :short_message => msg,
-          :full_message => full_msg,
-          :level => level,
-          :file => file,
-          :line => line
-        )
+        synch do
+          msg = format(logevent)
+  
+          @notifier.notify!(
+            :short_message => msg,
+            :full_message => full_msg,
+            :level => level,
+            :file => file,
+            :line => line
+          )
+        end
       rescue => err
         puts "Graylog2 logger. Could not send message: " + err.message
         puts err.backtrace.join("\n") if err.backtrace
