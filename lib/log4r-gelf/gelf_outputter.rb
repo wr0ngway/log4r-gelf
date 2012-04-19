@@ -25,6 +25,8 @@ module Log4r
         opts['level'] = LEVELS_MAP[hash['level']] if hash['level']
 
         @notifier = GELF::Notifier.new(server, port, max_chunk_size, opts)
+        # Only collect file/line if user turns on trace in log4r config
+        @notifier.collect_file_and_line = false
       end
 
       private

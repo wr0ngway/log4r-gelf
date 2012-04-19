@@ -20,7 +20,9 @@ describe Log4r::GelfOutputter do
               name: gelf
       EOF
       
-      GELF::Notifier.should_receive(:new).with("127.0.0.1", 12201, 'LAN', {})
+      opts = ["127.0.0.1", 12201, 'LAN', {}]
+      notifier = GELF::Notifier.new(*deep_copy(opts))
+      GELF::Notifier.should_receive(:new).with(*opts).and_return(notifier)
       
       cfg = Log4r::YamlConfigurator
       cfg.load_yaml_string(yml)
@@ -49,17 +51,18 @@ describe Log4r::GelfOutputter do
               max_chunk_size: 'WAN'
               level: FATAL
       EOF
-      
-      GELF::Notifier.should_receive(:new).with("myserver",
-                                               1234,
-                                               'WAN',
-                                               {
-                                                 'host' => 'myhost',
-                                                 'facility' => 'myfacility',
-                                                 'level' => GELF::Levels::FATAL
-                                               }
-      )
-      
+
+      opts = ["myserver",
+              1234,
+              'WAN',
+              {
+                  'host' => 'myhost',
+                  'facility' => 'myfacility',
+                  'level' => GELF::Levels::FATAL
+              }]
+      notifier = GELF::Notifier.new(*deep_copy(opts))
+      GELF::Notifier.should_receive(:new).with(*opts).and_return(notifier)
+
       cfg = Log4r::YamlConfigurator
       cfg.load_yaml_string(yml)
       outputter = Log4r::Outputter['gelf']
@@ -207,6 +210,21 @@ describe Log4r::GelfOutputter do
       ex = StandardError.new("mybad")
       raise ex rescue nil
       @logger.error(ex)
+    end
+    
+    it "doesn't set file/line by default" do
+      @logger.fatal("no tracing")
+      notifier_hash = @notifier.instance_eval { @hash }
+      notifier_hash['file'].should be_nil
+      notifier_hash['line'].should be_nil
+    end
+    
+    it "sets file/line if tracing" do
+      @logger.trace = true
+      @logger.fatal("no tracing")
+      notifier_hash = @notifier.instance_eval { @hash }
+      notifier_hash['file'].should_not be_nil
+      notifier_hash['line'].should_not be_nil
     end
     
     it "uses trace data if enabled" do
