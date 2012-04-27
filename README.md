@@ -21,3 +21,5 @@ To use, require the gem before you setup log4r, then add config like the followi
           # host: "#{Socket.gethostname}"
           # max_chunk_size: 'LAN'
           # level: DEBUG
+
+[![Build Status](https://secure.travis-ci.org/wr0ngway/log4r-gelf.png)](http://travis-ci.org/wr0ngway/log4r-gelf)
