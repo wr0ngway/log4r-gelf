@@ -91,6 +91,7 @@ describe Log4r::GelfOutputter do
       notifier = outputter.instance_eval { @notifier }
       notifier.should_receive(:notify!).with(
         :short_message => " INFO mylogger: hello\n",
+        :message => "hello",
         :level => Log4r::GelfOutputter::LEVELS_MAP['INFO'],
         "_logger" => "mylogger"
       )
@@ -122,6 +123,7 @@ describe Log4r::GelfOutputter do
       notifier = outputter.instance_eval { @notifier }
       notifier.should_receive(:notify!).with(
         :short_message => "mylogger: hello\n",
+        :message => "hello",
         :level => Log4r::GelfOutputter::LEVELS_MAP['INFO'],
         "_logger" => "mylogger"
       )
@@ -201,6 +203,7 @@ describe Log4r::GelfOutputter do
     
     it "extracts exception stack traces" do
       @notifier.should_receive(:notify!) do |args|
+        args[:message].should == "mybad"
         args[:short_message].should == "mybad\n"
         args[:full_message].should =~  /gelf_outputter_spec.rb:\d+/
         args[:level].should == Log4r::GelfOutputter::LEVELS_MAP['ERROR']
@@ -230,6 +233,7 @@ describe Log4r::GelfOutputter do
     it "uses trace data if enabled" do
       @logger.trace = true
       @notifier.should_receive(:notify!) do |args|
+        args[:message].should == "tracing"
         args[:short_message].should == "tracing\n"
         args[:full_message].should =~  /Log tracer:\n.*gelf_outputter_spec.rb:\d+/
         args[:level].should == Log4r::GelfOutputter::LEVELS_MAP['ERROR']
@@ -241,6 +245,7 @@ describe Log4r::GelfOutputter do
     
     it "uses global log4r context if available" do
       @notifier.should_receive(:notify!) do |args|
+        args[:message].should == "context"
         args[:short_message].should == "context\n"
         args[:level].should == Log4r::GelfOutputter::LEVELS_MAP['INFO']
         args["_global_context"].should == '"mygdc"'
@@ -251,6 +256,7 @@ describe Log4r::GelfOutputter do
     
     it "uses nested log4r context if available" do
       @notifier.should_receive(:notify!) do |args|
+        args[:message].should == "context"
         args[:short_message].should == "context\n"
         args[:level].should == Log4r::GelfOutputter::LEVELS_MAP['INFO']
         args["_nested_context_0"].should == '"myndc0"'
@@ -263,6 +269,7 @@ describe Log4r::GelfOutputter do
     
     it "uses mapped log4r context if available" do
       @notifier.should_receive(:notify!) do |args|
+        args[:message].should == "context"
         args[:short_message].should == "context\n"
         args[:level].should == Log4r::GelfOutputter::LEVELS_MAP['INFO']
         args["_mapped_context_foo"].should == '"mymdcfoo"'
@@ -277,6 +284,7 @@ describe Log4r::GelfOutputter do
       o = Object.new
       o.stub(:inspect).and_raise("bad")
       @notifier.should_receive(:notify!) do |args|
+        args[:message].should == "context"
         args[:short_message].should == "context\n"
         args[:level].should == Log4r::GelfOutputter::LEVELS_MAP['INFO']
         args.has_key?("_global_context").should be_false
