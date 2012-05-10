@@ -38,6 +38,7 @@ module Log4r
         level = GELF::Levels::DEBUG unless level 
         opts[:level] = level
         opts["_logger"] = logevent.fullname
+        opts[:message] = logevent.data.respond_to?(:message) ? logevent.data.message : logevent.data
             
         if logevent.data.respond_to?(:backtrace)
           trace = logevent.data.backtrace
