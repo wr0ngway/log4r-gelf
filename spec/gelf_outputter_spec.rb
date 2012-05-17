@@ -130,7 +130,121 @@ describe Log4r::GelfOutputter do
       )
       Log4r::Logger['mylogger'].info("hello")
     end
-  
+    
+    
+    it "should allow configuration of levels from yml" do
+      yml = <<-EOF
+        log4r_config:
+          pre_config:
+            root:
+              level: 'DEBUG'
+          loggers:
+            - name: "mylogger"
+              level: WARN
+              outputters:
+                - gelf
+          outputters:
+            - type: GelfOutputter
+              name: gelf
+              formatter:
+                pattern: '%m'
+                type: PatternFormatter
+      EOF
+      
+      cfg = Log4r::YamlConfigurator
+      cfg.load_yaml_string(yml)
+      
+      logger = Log4r::Logger['mylogger']
+      sio = StringIO.new 
+      logger.outputters << Log4r::IOOutputter.new("sbout", sio)
+
+      outputter = Log4r::Outputter['gelf']
+      notifier = outputter.instance_eval { @notifier }
+      
+      notifier.should_receive(:notify!) do |args|
+        args[:short_message].should == "yesshow\n"
+        args[:short_message].should_not == "noshow\n"
+        args[:level].should == Log4r::GelfOutputter::LEVELS_MAP['WARN']
+      end
+      
+      logger.debug("noshow")
+      logger.warn("yesshow")
+      sio.string.should =~ /yesshow/
+      sio.string.should_not =~ /noshow/
+    end
+      
+    it "should allow configuration of higher log levels than logger from yml" do
+      yml = <<-EOF
+        log4r_config:
+          pre_config:
+            root:
+              level: 'DEBUG'
+          loggers:
+            - name: "mylogger"
+              level: INFO
+              outputters:
+                - gelf
+          outputters:
+            - type: GelfOutputter
+              name: gelf
+              level: WARN
+              formatter:
+                pattern: '%m'
+                type: PatternFormatter
+      EOF
+      
+      cfg = Log4r::YamlConfigurator
+      cfg.load_yaml_string(yml)
+      
+      logger = Log4r::Logger['mylogger']
+      sio = StringIO.new 
+      logger.outputters << Log4r::IOOutputter.new("sbout", sio)
+
+      outputter = Log4r::Outputter['gelf']
+      notifier = outputter.instance_eval { @notifier }
+      
+      notifier.instance_eval { @sender }.should_not_receive(:send_datagrams)
+      logger.info("semishow")
+      sio.string.should =~ /semishow/
+    end  
+
+    it "should allow configuration of lower log levels than logger from yml" do
+      yml = <<-EOF
+        log4r_config:
+          pre_config:
+            root:
+              level: INFO
+          loggers:
+            - name: "base"
+              outputters:
+                - gelf
+            - name: "base::child"
+              level: ERROR
+          outputters:
+            - type: GelfOutputter
+              name: gelf
+              level: WARN
+              formatter:
+                pattern: '%m'
+                type: PatternFormatter
+      EOF
+      
+      cfg = Log4r::YamlConfigurator
+      cfg.load_yaml_string(yml)
+      
+      logger = Log4r::Logger['base::child']
+      sio = StringIO.new 
+      logger.outputters << Log4r::IOOutputter.new("sbout", sio)
+
+      outputter = Log4r::Outputter['gelf']
+      notifier = outputter.instance_eval { @notifier }
+      sender = notifier.instance_eval { @sender }
+      
+      sender.should_not_receive(:send_datagrams)
+      logger.warn("semishow")
+      sio.string.should_not =~ /semishow/
+    end  
+    
   end
   
   context "log contents" do
