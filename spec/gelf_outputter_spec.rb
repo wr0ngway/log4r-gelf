@@ -23,6 +23,7 @@ describe Log4r::GelfOutputter do
       opts = ["127.0.0.1", 12201, 'LAN', {}]
       notifier = GELF::Notifier.new(*deep_copy(opts))
       GELF::Notifier.should_receive(:new).with(*opts).and_return(notifier)
+      notifier.should_receive(:level_mapping=).with(:direct)
       
       cfg = Log4r::YamlConfigurator
       cfg.load_yaml_string(yml)
@@ -50,6 +51,7 @@ describe Log4r::GelfOutputter do
               host: "myhost"
               max_chunk_size: 'WAN'
               level: FATAL
+              level_mapping: logger
       EOF
 
       opts = ["myserver",
@@ -62,6 +64,7 @@ describe Log4r::GelfOutputter do
               }]
       notifier = GELF::Notifier.new(*deep_copy(opts))
       GELF::Notifier.should_receive(:new).with(*opts).and_return(notifier)
+      notifier.should_receive(:level_mapping=).with('logger')
 
       cfg = Log4r::YamlConfigurator
       cfg.load_yaml_string(yml)
