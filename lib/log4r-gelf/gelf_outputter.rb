@@ -43,7 +43,9 @@ module Log4r
         if logevent.data.respond_to?(:backtrace)
           trace = logevent.data.backtrace
           if trace
-            opts[:full_message] = trace.join("\n")
+            opts["_exception"] = "#{logevent.data.class}"
+            opts[:short_message] = "Caught #{logevent.data.class}: #{logevent.data.message}"
+            opts[:full_message] = "Backtrace:\n" + trace.join("\n")
             opts[:file] = trace[0].split(":")[0]
             opts[:line] = trace[0].split(":")[1]
           end
@@ -84,7 +86,7 @@ module Log4r
         end
         
         synch do
-          opts[:short_message] = format(logevent)
+          opts[:short_message] = format(logevent) unless opts[:short_message]
   
           @notifier.notify!(opts)
         end

@@ -318,7 +318,8 @@ describe Log4r::GelfOutputter do
     
     it "extracts exception stack traces" do
       @notifier.should_receive(:notify!) do |args|
-        args[:short_message].should == "mybad\n"
+        args["_exception"].should == "StandardError"
+        args[:short_message].should == "Caught StandardError: mybad"
         args[:full_message].should =~  /gelf_outputter_spec.rb:\d+/
         args[:level].should == Log4r::GelfOutputter::LEVELS_MAP['ERROR']
         args[:file].should =~ /^\/.*gelf_outputter_spec.rb$/
