@@ -1,0 +1,4 @@
+0.8.4 (06/15/2012)
+------------------
+
+More descriptive short_message when logging an exception and include exception name in a graylog attribute <956a35b>
