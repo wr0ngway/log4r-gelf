@@ -247,6 +247,31 @@ describe Log4r::GelfOutputter do
     
   end
   
+  context "#format_attribute" do
+    
+    it "formats numeric" do
+      Log4r::GelfOutputter.new("out").format_attribute(1).should == "1"
+      Log4r::GelfOutputter.new("out").format_attribute(1.1).should == "1.1"
+    end
+    
+    it "formats string" do
+      Log4r::GelfOutputter.new("out").format_attribute("foo").should == '"foo"'
+    end
+    
+    it "formats class" do
+      Log4r::GelfOutputter.new("out").format_attribute(Object).should == 'Object'
+    end
+    
+    it "formats list" do
+      Log4r::GelfOutputter.new("out").format_attribute([1, "two"]).should == '[1, "two"]'
+    end
+    
+    it "formats hash" do
+      Log4r::GelfOutputter.new("out").format_attribute({1 => "two"}).should == '{1=>"two"}'
+    end
+    
+  end
+  
   context "log contents" do
     
     before(:each) do
@@ -385,9 +410,11 @@ describe Log4r::GelfOutputter do
         args[:level].should == Log4r::GelfOutputter::LEVELS_MAP['INFO']
         args["_mapped_context_foo"].should == '"mymdcfoo"'
         args["_mapped_context_lucky"].should == '7'
+        args["_mapped_context_myclass"].should == 'Object'
       end
       Log4r::MDC.put("foo", "mymdcfoo")
       Log4r::MDC.put("lucky", 7)
+      Log4r::MDC.put("myclass", Object)
       @logger.info("context")
     end
     

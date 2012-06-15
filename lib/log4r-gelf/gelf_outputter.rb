@@ -30,6 +30,10 @@ module Log4r
         @notifier.level_mapping = hash['level_mapping'] || :direct
       end
 
+      def format_attribute(value)
+        value.inspect
+      end
+      
       private
       
       def canonical_log(logevent)
@@ -43,7 +47,7 @@ module Log4r
         if logevent.data.respond_to?(:backtrace)
           trace = logevent.data.backtrace
           if trace
-            opts["_exception"] = "#{logevent.data.class}"
+            opts["_exception"] = format_attribute(logevent.data.class)
             opts[:short_message] = "Caught #{logevent.data.class}: #{logevent.data.message}"
             opts[:full_message] = "Backtrace:\n" + trace.join("\n")
             opts[:file] = trace[0].split(":")[0]
@@ -61,7 +65,7 @@ module Log4r
         gdc = Log4r::GDC.get
         if gdc && gdc != $0
           begin
-            opts["_global_context"] = gdc.inspect
+            opts["_global_context"] = format_attribute(gdc)
           rescue
           end
         end
@@ -69,7 +73,7 @@ module Log4r
         if Log4r::NDC.get_depth > 0
           Log4r::NDC.clone_stack.each_with_index do |x, i|
             begin
-              opts["_nested_context_#{i}"] = x.inspect
+              opts["_nested_context_#{i}"] = format_attribute(x)
             rescue
             end
           end
@@ -79,7 +83,7 @@ module Log4r
         if mdc && mdc.size > 0
           mdc.each do |k, v|
             begin
-              opts["_mapped_context_#{k}"] = v.inspect
+              opts["_mapped_context_#{k}"] = format_attribute(v)
             rescue
             end
           end
