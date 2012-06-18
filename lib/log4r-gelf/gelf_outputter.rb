@@ -24,6 +24,10 @@ module Log4r
         opts['facility'] = hash['facility'] if hash['facility']
         opts['level'] = LEVELS_MAP[hash['level']] if hash['level']
 
+        @gdc_key = hash.has_key?('global_context_key') ? hash['global_context_key'] : "gdc"
+        @ndc_prefix = hash.has_key?('nested_context_prefix') ? hash['nested_context_prefix'] : "ndc_"
+        @mdc_prefix = hash.has_key?('mapped_context_prefix') ? hash['mapped_context_prefix'] : "mdc_"
+        
         @notifier = GELF::Notifier.new(server, port, max_chunk_size, opts)
         # Only collect file/line if user turns on trace in log4r config
         @notifier.collect_file_and_line = false
@@ -63,27 +67,27 @@ module Log4r
         end
         
         gdc = Log4r::GDC.get
-        if gdc && gdc != $0
+        if gdc && gdc != $0 && @gdc_key
           begin
-            opts["_global_context"] = format_attribute(gdc)
+            opts["_#{@gdc_key}"] = format_attribute(gdc)
           rescue
           end
         end
           
-        if Log4r::NDC.get_depth > 0
+        if Log4r::NDC.get_depth > 0 && @ndc_prefix
           Log4r::NDC.clone_stack.each_with_index do |x, i|
             begin
-              opts["_nested_context_#{i}"] = format_attribute(x)
+              opts["_#{@ndc_prefix}#{i}"] = format_attribute(x)
             rescue
             end
           end
         end
 
         mdc = Log4r::MDC.get_context
-        if mdc && mdc.size > 0
+        if mdc && mdc.size > 0 && @mdc_prefix
           mdc.each do |k, v|
             begin
-              opts["_mapped_context_#{k}"] = format_attribute(v)
+              opts["_#{@mdc_prefix}#{k}"] = format_attribute(v)
             rescue
             end
           end
