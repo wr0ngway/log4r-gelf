@@ -92,7 +92,17 @@ module Log4r
             end
           end
         end
-        
+
+        # Extract any context values out of the logevent's data hash.  The graylog2 adapter for Lograge will do
+        # this, for example.
+        logevent.data.each do |key, value|
+          if key.to_s =~ /^_/
+            opts[key] = value
+          end
+        end
+
+        opts[:short_message] = logevent.data[:short_message] if logevent.data.has_key?(:short_message)
+
         synch do
           opts[:short_message] = format(logevent) unless opts[:short_message]
   
