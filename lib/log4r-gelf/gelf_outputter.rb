@@ -105,11 +105,9 @@ module Log4r
           opts[:short_message] = logevent.data[:short_message] if logevent.data.has_key?(:short_message)
         end
 
-        synch do
-          opts[:short_message] = format(logevent) unless opts[:short_message]
+        opts[:short_message] = format(logevent) unless opts[:short_message]
   
-          @notifier.notify!(opts)
-        end
+        @notifier.notify!(opts)
       rescue => err
         puts "Graylog2 logger. Could not send message: " + err.message
         puts err.backtrace.join("\n") if err.backtrace

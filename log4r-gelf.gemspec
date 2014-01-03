@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_dependency("log4r", '~> 1.1.10')
-  s.add_dependency("gelf", '~> 1.3')
+  s.add_dependency("gelf", '>= 1.4.0')
   
   s.add_development_dependency('rake')
   s.add_development_dependency('rspec')

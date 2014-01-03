@@ -1,3 +1,10 @@
+1.0.0 (12/06/2013)
+------------------
+
+Merge pull request #6 from ping4/non_synched_notify <bb58618> [Matt Conway]
+get rid of synch block around @notifier call, since gelf gem is now threadsafe <ed2d65d> [Dave Benvenuti]
+require gelf 1.4.0 or greater <13ce224> [Dave Benvenuti]
+
 0.9.0 (06/18/2012)
 ------------------
 
