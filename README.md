@@ -18,6 +18,7 @@ To use, require the gem before you setup log4r, then add config like the followi
           gelf_port: "<graylog_server_port>"
           # Optional - showing default values
           # facility: "gelf-rb"
+          # protocol: "tcp"
           # host: "#{Socket.gethostname}"
           # max_chunk_size: 'LAN'
           # level: DEBUG
