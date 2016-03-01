@@ -20,6 +20,7 @@ module Log4r
         port = (hash['gelf_port'] || 12201).to_i
         max_chunk_size = hash['max_chunk_size'] || 'LAN'
         opts = {}
+        opts['protocol'] = hash['protocol'] == 'tcp' ? GELF::Protocol::TCP : GELF::Protocol::UDP
         opts['host'] = hash['host'] if hash['host']
         opts['facility'] = hash['facility'] if hash['facility']
         opts['level'] = LEVELS_MAP[hash['level']] if hash['level']
